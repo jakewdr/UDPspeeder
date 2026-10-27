@@ -10,12 +10,12 @@
 
 extern int disable_anti_replay;
 
-#include "connection.h"
 #include "common.h"
-#include "log.h"
+#include "connection.h"
 #include "delay_manager.h"
 #include "fd_manager.h"
 #include "fec_manager.h"
+#include "log.h"
 
 extern int report_interval;
 
@@ -117,14 +117,14 @@ struct conv_manager_t  // manage the udp connections
         lru.erase(conv);
         return 0;
     }
-    int clear_inactive(char *info = 0) {
+    int clear_inactive(char* info = 0) {
         if (get_current_time() - last_clear_time > conv_clear_interval) {
             last_clear_time = get_current_time();
             return clear_inactive0(info);
         }
         return 0;
     }
-    int clear_inactive0(char *info) {
+    int clear_inactive0(char* info) {
         if (disable_conv_clear) return 0;
 
         unordered_map<u32_t, u64_t>::iterator it;
@@ -190,24 +190,24 @@ struct stat_t {
     stat_t() {
         clear();
     }
-    void clear(){
+    void clear() {
         memset(this, 0, sizeof(stat_t));
     }
     void report_as_client() {
         if (report_interval != 0 && get_current_time() - last_report_time > u64_t(report_interval) * 1000) {
             last_report_time = get_current_time();
-            inner_stat_t &a = normal_to_fec;
-            inner_stat_t &b = fec_to_normal;
+            inner_stat_t& a = normal_to_fec;
+            inner_stat_t& b = fec_to_normal;
             mylog(log_info, "[report]client-->server:(original:%llu pkt;%llu byte) (fec:%llu pkt,%llu byte)  server-->client:(original:%llu pkt;%llu byte) (fec:%llu pkt;%llu byte)\n",
                   a.input_packet_num, a.input_packet_size, a.output_packet_num, a.output_packet_size,
                   b.output_packet_num, b.output_packet_size, b.input_packet_num, b.input_packet_size);
         }
     }
-    void report_as_server(address_t &addr) {
+    void report_as_server(address_t& addr) {
         if (report_interval != 0 && get_current_time() - last_report_time > u64_t(report_interval) * 1000) {
             last_report_time = get_current_time();
-            inner_stat_t &a = fec_to_normal;
-            inner_stat_t &b = normal_to_fec;
+            inner_stat_t& a = fec_to_normal;
+            inner_stat_t& b = normal_to_fec;
             mylog(log_info, "[report][%s]client-->server:(original:%llu pkt;%llu byte) (fec:%llu pkt;%llu byte)  server-->client:(original:%llu pkt;%llu byte) (fec:%llu pkt;%llu byte)\n",
                   addr.get_str(),
                   a.output_packet_num, a.output_packet_size, a.input_packet_num, a.input_packet_size,
@@ -249,7 +249,7 @@ struct conn_info_t : not_copy_able_t  // stores info for a raw connection.for cl
     u64_t last_active_time;
     stat_t stat;
 
-    struct ev_loop *loop = 0;
+    struct ev_loop* loop = 0;
     int local_listen_fd;
 
     int remote_fd;       // only used for client
@@ -305,17 +305,17 @@ struct conn_manager_t  //manager for connections. for client,we dont need conn_m
 
 struct conn_manager_t  // manager for connections. for client,we dont need conn_manager since there is only one connection.for server we use one conn_manager for all connections
 {
-    unordered_map<address_t, conn_info_t *> mp;  // put it at end so that it de-constructs first
-    unordered_map<address_t, conn_info_t *>::iterator clear_it;
+    unordered_map<address_t, conn_info_t*> mp;  // put it at end so that it de-constructs first
+    unordered_map<address_t, conn_info_t*>::iterator clear_it;
 
     long long last_clear_time;
 
     conn_manager_t();
     int exist(address_t addr);
-    conn_info_t *&find_insert_p(address_t addr);  // be aware,the address may change after rehash //not true?
-    conn_info_t &find_insert(address_t addr);     // be aware,the address may change after rehash
+    conn_info_t*& find_insert_p(address_t addr);  // be aware,the address may change after rehash //not true?
+    conn_info_t& find_insert(address_t addr);     // be aware,the address may change after rehash
 
-    int erase(unordered_map<address_t, conn_info_t *>::iterator erase_it);
+    int erase(unordered_map<address_t, conn_info_t*>::iterator erase_it);
     int clear_inactive();
     int clear_inactive0();
 };

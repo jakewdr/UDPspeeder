@@ -5,11 +5,12 @@
  *      Author: root
  */
 
-#include "common.h"
-#include "log.h"
 #include "packet.h"
-#include "misc.h"
+
+#include "common.h"
 #include "crc32/Crc32.h"
+#include "log.h"
+#include "misc.h"
 
 int iv_min = 4;
 int iv_max = 32;  //< 256;
@@ -30,7 +31,7 @@ char key_string[1000] = "";
 
 // int local_listen_fd=-1;
 
-void encrypt_0(char *input, int &len, char *key) {
+void encrypt_0(char* input, int& len, char* key) {
     int i, j;
     if (key[0] == 0) return;
     for (i = 0, j = 0; i < len; i++, j++) {
@@ -39,7 +40,7 @@ void encrypt_0(char *input, int &len, char *key) {
     }
 }
 
-void decrypt_0(char *input, int &len, char *key) {
+void decrypt_0(char* input, int& len, char* key) {
     int i, j;
     if (key[0] == 0) return;
     for (i = 0, j = 0; i < len; i++, j++) {
@@ -47,7 +48,7 @@ void decrypt_0(char *input, int &len, char *key) {
         input[i] ^= key[j];
     }
 }
-int do_obscure_old(const char *input, int in_len, char *output, int &out_len) {
+int do_obscure_old(const char* input, int in_len, char* output, int& out_len) {
     // memcpy(output,input,in_len);
     //	out_len=in_len;
     // return 0;
@@ -75,7 +76,7 @@ int do_obscure_old(const char *input, int in_len, char *output, int &out_len) {
     return 0;
 }
 
-int do_obscure(char *data, int &len) {
+int do_obscure(char* data, int& len) {
     assert(len >= 0);
     assert(len < buf_len);
 
@@ -91,7 +92,7 @@ int do_obscure(char *data, int &len) {
     return 0;
 }
 
-int de_obscure(char *data, int &len) {
+int de_obscure(char* data, int& len) {
     if (len < 1) return -1;
     int iv_len = int((uint8_t)data[len - 1]);
 
@@ -105,7 +106,7 @@ int de_obscure(char *data, int &len) {
 
     return 0;
 }
-int de_obscure_old(const char *input, int in_len, char *output, int &out_len) {
+int de_obscure_old(const char* input, int in_len, char* output, int& out_len) {
     // memcpy(output,input,in_len);
     // out_len=in_len;
     // return 0;
@@ -147,10 +148,10 @@ int sendto_fd_ip_port (int fd,u32_t ip,int port,char * buf, int len,int flags)
                         sizeof(tmp_sockaddr));
 }*/
 
-int sendto_fd_addr(int fd, address_t addr, char *buf, int len, int flags) {
+int sendto_fd_addr(int fd, address_t addr, char* buf, int len, int flags) {
     return sendto(fd, buf,
                   len, 0,
-                  (struct sockaddr *)&addr.inner,
+                  (struct sockaddr*)&addr.inner,
                   addr.get_len());
 }
 /*
@@ -159,11 +160,11 @@ int sendto_ip_port (u32_t ip,int port,char * buf, int len,int flags)
         return sendto_fd_ip_port(local_listen_fd,ip,port,buf,len,flags);
 }*/
 
-int send_fd(int fd, char *buf, int len, int flags) {
+int send_fd(int fd, char* buf, int len, int flags) {
     return send(fd, buf, len, flags);
 }
 
-int my_send(const dest_t &dest, char *data, int len) {
+int my_send(const dest_t& dest, char* data, int len) {
     if (dest.cook) {
         do_cook(data, len);
     }
@@ -231,7 +232,7 @@ int my_send(const dest_t &dest, char *data, int len) {
     return 0;
 }
 
-int put_conv0(u32_t conv, const char *input, int len_in, char *&output, int &len_out) {
+int put_conv0(u32_t conv, const char* input, int len_in, char*& output, int& len_out) {
     assert(len_in >= 0);
     static char buf[buf_len];
     output = buf;
@@ -244,12 +245,12 @@ int put_conv0(u32_t conv, const char *input, int len_in, char *&output, int &len
     memcpy(output + len_in + (int)(sizeof(n_conv)), &crc32_n, sizeof(crc32_n));
     return 0;
 }
-int get_conv0(u32_t &conv, const char *input, int len_in, char *&output, int &len_out) {
+int get_conv0(u32_t& conv, const char* input, int len_in, char*& output, int& len_out) {
     assert(len_in >= 0);
     u32_t n_conv;
     memcpy(&n_conv, input, sizeof(n_conv));
     conv = ntohl(n_conv);
-    output = (char *)input + sizeof(n_conv);
+    output = (char*)input + sizeof(n_conv);
     u32_t crc32_n;
     len_out = len_in - (int)sizeof(n_conv) - (int)sizeof(crc32_n);
     if (len_out < 0) {
@@ -264,7 +265,7 @@ int get_conv0(u32_t &conv, const char *input, int len_in, char *&output, int &le
     }
     return 0;
 }
-int put_crc32(char *s, int &len) {
+int put_crc32(char* s, int& len) {
     if (disable_checksum) return 0;
     assert(len >= 0);
     // if(len<0) return -1;
@@ -275,14 +276,14 @@ int put_crc32(char *s, int &len) {
     return 0;
 }
 
-int do_cook(char *data, int &len) {
+int do_cook(char* data, int& len) {
     put_crc32(data, len);
     if (!disable_obscure) do_obscure(data, len);
     if (!disable_xor) encrypt_0(data, len, key_string);
     return 0;
 }
 
-int de_cook(char *s, int &len) {
+int de_cook(char* s, int& len) {
     if (!disable_xor) decrypt_0(s, len, key_string);
     if (!disable_obscure) {
         int ret = de_obscure(s, len);
@@ -298,7 +299,7 @@ int de_cook(char *s, int &len) {
     }
     return 0;
 }
-int rm_crc32(char *s, int &len) {
+int rm_crc32(char* s, int& len) {
     if (disable_checksum) return 0;
     assert(len >= 0);
     len -= sizeof(u32_t);
@@ -314,7 +315,7 @@ int do_obs()
 
 }
 int de_obs()*/
-int put_conv(u32_t conv, const char *input, int len_in, char *&output, int &len_out) {
+int put_conv(u32_t conv, const char* input, int len_in, char*& output, int& len_out) {
     static char buf[buf_len];
     output = buf;
     u32_t n_conv = htonl(conv);
@@ -324,11 +325,11 @@ int put_conv(u32_t conv, const char *input, int len_in, char *&output, int &len_
 
     return 0;
 }
-int get_conv(u32_t &conv, const char *input, int len_in, char *&output, int &len_out) {
+int get_conv(u32_t& conv, const char* input, int len_in, char*& output, int& len_out) {
     u32_t n_conv;
     memcpy(&n_conv, input, sizeof(n_conv));
     conv = ntohl(n_conv);
-    output = (char *)input + sizeof(n_conv);
+    output = (char*)input + sizeof(n_conv);
     len_out = len_in - (int)sizeof(n_conv);
     if (len_out < 0) {
         mylog(log_debug, "len_out<0\n");

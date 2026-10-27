@@ -2,13 +2,13 @@
 #ifndef _LOG_MYLOG_H_
 #define _LOG_MYLOG_H_
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <getopt.h>
-#include <unistd.h>
 #include <errno.h>
+#include <getopt.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <time.h>
+#include <unistd.h>
 
 #include <set>
 
@@ -46,7 +46,7 @@ extern int enable_log_color;
 #define mylog(...) log0(__FILE__, __FUNCTION__, __LINE__, __VA_ARGS__)
 #endif
 
-//#define mylog(__first_argu__dummy_abcde__,...) {;}
+// #define mylog(__first_argu__dummy_abcde__,...) {;}
 
 void log0(const char* file, const char* function, int line, int level, const char* str, ...);
 

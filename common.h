@@ -7,31 +7,29 @@
 
 #ifndef COMMON_H_
 #define COMMON_H_
-//#define __STDC_FORMAT_MACROS 1
-#include <inttypes.h>
-
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <getopt.h>
-
-#include <unistd.h>
+// #define __STDC_FORMAT_MACROS 1
 #include <errno.h>
-#include <sys/types.h>
-#include <sys/stat.h>
+#include <errno.h>  //For errno - the error number
+#include <getopt.h>
+#include <inttypes.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <stdlib.h>  //for exit(0);
-#include <errno.h>   //For errno - the error number
-//#include <netinet/tcp.h>   //Provides declarations for tcp header
-//#include <netinet/udp.h>
-//#include <netinet/ip.h>    //Provides declarations for ip header
-//#include <netinet/if_ether.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+// #include <netinet/tcp.h>   //Provides declarations for tcp header
+// #include <netinet/udp.h>
+// #include <netinet/ip.h>    //Provides declarations for ip header
+// #include <netinet/if_ether.h>
 #include <fcntl.h>
 #include <sys/time.h>
 #include <time.h>
-//#include <netinet/in.h>
-//#include <net/if.h>
-#include <stdarg.h>
+// #include <netinet/in.h>
+// #include <net/if.h>
 #include <assert.h>
+#include <stdarg.h>
 
 #if !defined(NO_LIBEV_EMBED)
 #include <my_ev.h>
@@ -44,18 +42,18 @@
 #include <ws2tcpip.h>
 typedef int socklen_t;
 #else
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <sys/ioctl.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <sys/ioctl.h>
+#include <sys/socket.h>
+#include <sys/types.h>
 #endif
 
+#include <list>
+#include <map>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
-#include <map>
-#include <list>
-#include <string>
 #include <vector>
 using namespace std;
 
@@ -69,12 +67,12 @@ typedef unsigned short u16_t;
 typedef short i16_t;
 
 #if defined(__MINGW32__)
-int inet_pton(int af, const char *src, void *dst);
-const char *inet_ntop(int af, const void *src, char *dst, socklen_t size);
-#define setsockopt(a, b, c, d, e) setsockopt(a, b, c, (const char *)(d), e)
+int inet_pton(int af, const char* src, void* dst);
+const char* inet_ntop(int af, const void* src, char* dst, socklen_t size);
+#define setsockopt(a, b, c, d, e) setsockopt(a, b, c, (const char*)(d), e)
 #endif
 
-char *get_sock_error();
+char* get_sock_error();
 int get_sock_errno();
 int init_ws();
 
@@ -156,7 +154,7 @@ enum program_mode_t { unset_mode = 0,
                       client_mode,
                       server_mode };
 extern program_mode_t program_mode;
-extern unordered_map<int, const char *> raw_mode_tostring;
+extern unordered_map<int, const char*> raw_mode_tostring;
 
 enum working_mode_t { unset_working_mode = 0,
                       tunnel_mode,
@@ -212,14 +210,14 @@ struct pseudo_header {
     unsigned short tcp_length;
 };
 
-u32_t djb2(unsigned char *str, int len);
-u32_t sdbm(unsigned char *str, int len);
+u32_t djb2(unsigned char* str, int len);
+u32_t sdbm(unsigned char* str, int len);
 
 struct address_t  // TODO scope id
 {
     struct hash_function {
-        u32_t operator()(const address_t &key) const {
-            return sdbm((unsigned char *)&key.inner, sizeof(key.inner));
+        u32_t operator()(const address_t& key) const {
+            return sdbm((unsigned char*)&key.inner, sizeof(key.inner));
         }
     };
 
@@ -247,37 +245,37 @@ struct address_t  // TODO scope id
             return 0;
     }*/
 
-    int from_ip_port_new(int type, void *ip, int port) {
+    int from_ip_port_new(int type, void* ip, int port) {
         clear();
         if (type == AF_INET) {
             inner.ipv4.sin_family = AF_INET;
             inner.ipv4.sin_port = htons(port);
-            inner.ipv4.sin_addr.s_addr = *((u32_t *)ip);
+            inner.ipv4.sin_addr.s_addr = *((u32_t*)ip);
         } else if (type == AF_INET6) {
             inner.ipv6.sin6_family = AF_INET6;
             inner.ipv6.sin6_port = htons(port);
-            inner.ipv6.sin6_addr = *((in6_addr *)ip);
+            inner.ipv6.sin6_addr = *((in6_addr*)ip);
         }
         return 0;
     }
 
-    int from_str(char *str);
+    int from_str(char* str);
 
-    int from_str_ip_only(char *str);
+    int from_str_ip_only(char* str);
 
-    int from_sockaddr(sockaddr *, socklen_t);
+    int from_sockaddr(sockaddr*, socklen_t);
 
-    char *get_str();
-    void to_str(char *);
+    char* get_str();
+    void to_str(char*);
 
     inline int is_valid() {
-        u32_t ret = ((sockaddr *)&inner)->sa_family;
+        u32_t ret = ((sockaddr*)&inner)->sa_family;
         return (ret == AF_INET || ret == AF_INET6);
     }
 
     inline u32_t get_type() {
         assert(is_valid());
-        u32_t ret = ((sockaddr *)&inner)->sa_family;
+        u32_t ret = ((sockaddr*)&inner)->sa_family;
         return ret;
     }
 
@@ -322,22 +320,22 @@ struct address_t  // TODO scope id
         return;
     }
 
-    bool operator==(const address_t &b) const {
+    bool operator==(const address_t& b) const {
         // return this->data==b.data;
         return memcmp(&this->inner, &b.inner, sizeof(this->inner)) == 0;
     }
 
     int new_connected_udp_fd();
 
-    char *get_ip();
+    char* get_ip();
 };
 
 namespace std {
 template <>
 struct hash<address_t> {
-    std::size_t operator()(const address_t &key) const {
+    std::size_t operator()(const address_t& key) const {
         // return address_t::hash_function(k);
-        return sdbm((unsigned char *)&key.inner, sizeof(key.inner));
+        return sdbm((unsigned char*)&key.inner, sizeof(key.inner));
     }
 };
 }  // namespace std
@@ -377,16 +375,16 @@ u32_t get_u64_h(u64_t a);
 
 u32_t get_u64_l(u64_t a);
 
-void write_u16(char *, u16_t a);
-u16_t read_u16(char *);
+void write_u16(char*, u16_t a);
+u16_t read_u16(char*);
 
-void write_u32(char *, u32_t a);
-u32_t read_u32(char *);
+void write_u32(char*, u32_t a);
+u32_t read_u32(char*);
 
-void write_u64(char *, u64_t a);
-u64_t read_uu64(char *);
+void write_u64(char*, u64_t a);
+u64_t read_uu64(char*);
 
-char *my_ntoa(u32_t ip);
+char* my_ntoa(u32_t ip);
 
 void myexit(int a);
 void init_random_number_fd();
@@ -400,8 +398,8 @@ bool larger_than_u32(u32_t a, u32_t b);
 void setnonblocking(int sock);
 int set_buf_size(int fd, int socket_buf_size);
 
-unsigned short csum(const unsigned short *ptr, int nbytes);
-unsigned short tcp_csum(const pseudo_header &ph, const unsigned short *ptr, int nbytes);
+unsigned short csum(const unsigned short* ptr, int nbytes);
+unsigned short tcp_csum(const pseudo_header& ph, const unsigned short* ptr, int nbytes);
 
 void signal_handler(int sig);
 // int numbers_to_char(id_t id1,id_t id2,id_t id3,char * &data,int &len);
@@ -409,35 +407,35 @@ void signal_handler(int sig);
 
 void myexit(int a);
 
-int add_iptables_rule(char *);
+int add_iptables_rule(char*);
 
 int clear_iptables_rule();
-void get_fake_random_chars(char *s, int len);
+void get_fake_random_chars(char* s, int len);
 int random_between(u32_t a, u32_t b);
 
-int set_timer_ms(int epollfd, int &timer_fd, u32_t timer_interval);
+int set_timer_ms(int epollfd, int& timer_fd, u32_t timer_interval);
 
 int round_up_div(int a, int b);
 
-int create_fifo(char *file);
+int create_fifo(char* file);
 /*
 int create_new_udp(int &new_udp_fd,int remote_address_uint32,int remote_port);
 */
 
-int new_listen_socket(int &fd, u32_t ip, int port);
+int new_listen_socket(int& fd, u32_t ip, int port);
 
-int new_connected_socket(int &fd, u32_t ip, int port);
+int new_connected_socket(int& fd, u32_t ip, int port);
 
-int new_listen_socket2(int &fd, address_t &addr);
-int new_connected_socket2(int &fd, address_t &addr, address_t *bind_addr, char *out_interface);
+int new_listen_socket2(int& fd, address_t& addr);
+int new_connected_socket2(int& fd, address_t& addr, address_t* bind_addr, char* out_interface);
 
 struct not_copy_able_t {
     not_copy_able_t() {
     }
-    not_copy_able_t(const not_copy_able_t &other) {
+    not_copy_able_t(const not_copy_able_t& other) {
         assert(0 == 1);
     }
-    const not_copy_able_t &operator=(const not_copy_able_t &other) {
+    const not_copy_able_t& operator=(const not_copy_able_t& other) {
         assert(0 == 1);
         return other;
     }
@@ -446,7 +444,7 @@ struct not_copy_able_t {
 template <class key_t>
 struct lru_collector_t : not_copy_able_t {
     // typedef void* key_t;
-    //#define key_t void*
+    // #define key_t void*
     struct lru_pair_t {
         key_t key;
         my_time_t ts;
@@ -502,7 +500,7 @@ struct lru_collector_t : not_copy_able_t {
         return mp[key]->ts;
     }
 
-    my_time_t peek_back(key_t &key) {
+    my_time_t peek_back(key_t& key) {
         assert(!q.empty());
         auto it = q.end();
         it--;
@@ -524,6 +522,6 @@ struct lru_collector_t : not_copy_able_t {
     }*/
 };
 
-vector<string> string_to_vec(const char *s, const char *sp);
+vector<string> string_to_vec(const char* s, const char* sp);
 
 #endif /* COMMON_H_ */

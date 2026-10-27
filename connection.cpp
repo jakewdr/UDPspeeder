@@ -18,11 +18,11 @@ void server_clear_function(u64_t u64)  // used in conv_manager in server mode.fo
 {
     fd64_t fd64 = u64;
     assert(fd_manager.exist(fd64));
-    ev_io &watcher = fd_manager.get_info(fd64).io_watcher;
+    ev_io& watcher = fd_manager.get_info(fd64).io_watcher;
 
-    address_t &addr = fd_manager.get_info(fd64).addr;            //
+    address_t& addr = fd_manager.get_info(fd64).addr;            //
     assert(conn_manager.exist(addr));                            //
-    struct ev_loop *loop = conn_manager.find_insert(addr).loop;  // overkill ? should we just use ev_default_loop(0)?
+    struct ev_loop* loop = conn_manager.find_insert(addr).loop;  // overkill ? should we just use ev_default_loop(0)?
 
     ev_io_stop(loop, &watcher);
 
@@ -42,13 +42,13 @@ int conn_manager_t::exist(address_t addr) {
     return 0;
 }
 
-conn_info_t *&conn_manager_t::find_insert_p(address_t addr)  // be aware,the address may change after rehash
+conn_info_t*& conn_manager_t::find_insert_p(address_t addr)  // be aware,the address may change after rehash
 {
     // u64_t u64=0;
     // u64=ip;
     // u64<<=32u;
     // u64|=port;
-    unordered_map<address_t, conn_info_t *>::iterator it = mp.find(addr);
+    unordered_map<address_t, conn_info_t*>::iterator it = mp.find(addr);
     if (it == mp.end()) {
         mp[addr] = new conn_info_t;
         // lru.new_key(addr);
@@ -57,13 +57,13 @@ conn_info_t *&conn_manager_t::find_insert_p(address_t addr)  // be aware,the add
     }
     return mp[addr];
 }
-conn_info_t &conn_manager_t::find_insert(address_t addr)  // be aware,the address may change after rehash
+conn_info_t& conn_manager_t::find_insert(address_t addr)  // be aware,the address may change after rehash
 {
     // u64_t u64=0;
     // u64=ip;
     // u64<<=32u;
     // u64|=port;
-    unordered_map<address_t, conn_info_t *>::iterator it = mp.find(addr);
+    unordered_map<address_t, conn_info_t*>::iterator it = mp.find(addr);
     if (it == mp.end()) {
         mp[addr] = new conn_info_t;
         // lru.new_key(addr);
@@ -72,7 +72,7 @@ conn_info_t &conn_manager_t::find_insert(address_t addr)  // be aware,the addres
     }
     return *mp[addr];
 }
-int conn_manager_t::erase(unordered_map<address_t, conn_info_t *>::iterator erase_it) {
+int conn_manager_t::erase(unordered_map<address_t, conn_info_t*>::iterator erase_it) {
     delete (erase_it->second);
     mp.erase(erase_it->first);
     return 0;
@@ -87,8 +87,8 @@ int conn_manager_t::clear_inactive() {
 
 int conn_manager_t::clear_inactive0() {
     // mylog(log_info,"called\n");
-    unordered_map<address_t, conn_info_t *>::iterator it;
-    unordered_map<address_t, conn_info_t *>::iterator old_it;
+    unordered_map<address_t, conn_info_t*>::iterator it;
+    unordered_map<address_t, conn_info_t*>::iterator old_it;
 
     if (disable_conn_clear) return 0;
 

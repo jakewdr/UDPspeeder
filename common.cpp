@@ -6,15 +6,16 @@
  */
 
 #include "common.h"
-#include "log.h"
 
-#include <random>
 #include <cmath>
+#include <random>
+
+#include "log.h"
 
 int about_to_exit = 0;
 
 raw_mode_t raw_mode = mode_faketcp;
-unordered_map<int, const char *> raw_mode_tostring = {{mode_faketcp, "faketcp"}, {mode_udp, "udp"}, {mode_icmp, "icmp"}};
+unordered_map<int, const char*> raw_mode_tostring = {{mode_faketcp, "faketcp"}, {mode_udp, "udp"}, {mode_icmp, "icmp"}};
 
 // static int random_number_fd=-1;
 char iptables_rule[200] = "";
@@ -73,7 +74,7 @@ int init_ws() {
 }
 
 #if defined(__MINGW32__)
-int inet_pton(int af, const char *src, void *dst) {
+int inet_pton(int af, const char* src, void* dst) {
     struct sockaddr_storage ss;
     int size = sizeof(ss);
     char src_copy[INET6_ADDRSTRLEN + 1];
@@ -83,20 +84,20 @@ int inet_pton(int af, const char *src, void *dst) {
     strncpy(src_copy, src, INET6_ADDRSTRLEN + 1);
     src_copy[INET6_ADDRSTRLEN] = 0;
 
-    if (WSAStringToAddress(src_copy, af, NULL, (struct sockaddr *)&ss, &size) == 0) {
+    if (WSAStringToAddress(src_copy, af, NULL, (struct sockaddr*)&ss, &size) == 0) {
         switch (af) {
             case AF_INET:
-                *(struct in_addr *)dst = ((struct sockaddr_in *)&ss)->sin_addr;
+                *(struct in_addr*)dst = ((struct sockaddr_in*)&ss)->sin_addr;
                 return 1;
             case AF_INET6:
-                *(struct in6_addr *)dst = ((struct sockaddr_in6 *)&ss)->sin6_addr;
+                *(struct in6_addr*)dst = ((struct sockaddr_in6*)&ss)->sin6_addr;
                 return 1;
         }
     }
     return 0;
 }
 
-const char *inet_ntop(int af, const void *src, char *dst, socklen_t size) {
+const char* inet_ntop(int af, const void* src, char* dst, socklen_t size) {
     struct sockaddr_storage ss;
     unsigned long s = size;
 
@@ -105,21 +106,21 @@ const char *inet_ntop(int af, const void *src, char *dst, socklen_t size) {
 
     switch (af) {
         case AF_INET:
-            ((struct sockaddr_in *)&ss)->sin_addr = *(struct in_addr *)src;
+            ((struct sockaddr_in*)&ss)->sin_addr = *(struct in_addr*)src;
             break;
         case AF_INET6:
-            ((struct sockaddr_in6 *)&ss)->sin6_addr = *(struct in6_addr *)src;
+            ((struct sockaddr_in6*)&ss)->sin6_addr = *(struct in6_addr*)src;
             break;
         default:
             return NULL;
     }
     /* cannot directly use &size because of strict aliasing rules */
-    return (WSAAddressToString((struct sockaddr *)&ss, sizeof(ss), NULL, dst, &s) == 0) ? dst : NULL;
+    return (WSAAddressToString((struct sockaddr*)&ss, sizeof(ss), NULL, dst, &s) == 0) ? dst : NULL;
 }
-char *get_sock_error() {
+char* get_sock_error() {
     static char buf[1000];
     int e = WSAGetLastError();
-    wchar_t *s = NULL;
+    wchar_t* s = NULL;
     FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
                    NULL, e,
                    MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
@@ -134,7 +135,7 @@ int get_sock_errno() {
     return WSAGetLastError();
 }
 #else
-char *get_sock_error() {
+char* get_sock_error() {
     static char buf[1000];
     sprintf(buf, "%d:%s", errno, strerror(errno));
     return buf;
@@ -185,7 +186,7 @@ struct my_random_t {
     }*/
 } my_random;
 
-int address_t::from_str(char *str) {
+int address_t::from_str(char* str) {
     clear();
 
     char ip_addr_str[100];
@@ -244,7 +245,7 @@ int address_t::from_str(char *str) {
     return 0;
 }
 
-int address_t::from_str_ip_only(char *str) {
+int address_t::from_str_ip_only(char* str) {
     clear();
 
     u32_t type;
@@ -254,7 +255,7 @@ int address_t::from_str_ip_only(char *str) {
     else
         type = AF_INET6;
 
-    ((sockaddr *)&inner)->sa_family = type;
+    ((sockaddr*)&inner)->sa_family = type;
 
     int ret;
     if (type == AF_INET) {
@@ -277,16 +278,16 @@ int address_t::from_str_ip_only(char *str) {
     return 0;
 }
 
-char *address_t::get_str() {
+char* address_t::get_str() {
     static char res[max_addr_len];
     to_str(res);
     return res;
 }
-void address_t::to_str(char *s) {
+void address_t::to_str(char* s) {
     // static char res[max_addr_len];
     char ip_addr[max_addr_len];
     u32_t port;
-    const char *ret = 0;
+    const char* ret = 0;
     if (get_type() == AF_INET6) {
         ret = inet_ntop(AF_INET6, &inner.ipv6.sin6_addr, ip_addr, max_addr_len);
         port = inner.ipv6.sin6_port;
@@ -315,10 +316,10 @@ void address_t::to_str(char *s) {
     // return res;
 }
 
-char *address_t::get_ip() {
+char* address_t::get_ip() {
     char ip_addr[max_addr_len];
     static char s[max_addr_len];
-    const char *ret = 0;
+    const char* ret = 0;
     if (get_type() == AF_INET6) {
         ret = inet_ntop(AF_INET6, &inner.ipv6.sin6_addr, ip_addr, max_addr_len);
     } else if (get_type() == AF_INET) {
@@ -343,7 +344,7 @@ char *address_t::get_ip() {
     return s;
 }
 
-int address_t::from_sockaddr(sockaddr *addr, socklen_t slen) {
+int address_t::from_sockaddr(sockaddr* addr, socklen_t slen) {
     clear();
     // memset(&inner,0,sizeof(inner));
     if (addr->sa_family == AF_INET6) {
@@ -371,7 +372,7 @@ int address_t::new_connected_udp_fd() {
     set_buf_size(new_udp_fd, socket_buf_size);
 
     mylog(log_debug, "created new udp_fd %d\n", new_udp_fd);
-    int ret = connect(new_udp_fd, (struct sockaddr *)&inner, get_len());
+    int ret = connect(new_udp_fd, (struct sockaddr*)&inner, get_len());
     if (ret != 0) {
         mylog(log_warn, "udp fd connect fail %d %s\n", ret, strerror(errno));
         // sock_close(new_udp_fd);
@@ -382,8 +383,8 @@ int address_t::new_connected_udp_fd() {
     return new_udp_fd;
 }
 
-void get_fake_random_chars(char *s, int len) {
-    char *p = s;
+void get_fake_random_chars(char* s, int len) {
+    char* p = s;
     int left = len;
 
     while (left >= (int)sizeof(u64_t)) {
@@ -462,41 +463,41 @@ u32_t get_u64_l(u64_t a) {
     return (a << 32u) >> 32u;
 }
 
-void write_u16(char *p, u16_t w) {
-    *(unsigned char *)(p + 1) = (w & 0xff);
-    *(unsigned char *)(p + 0) = (w >> 8);
+void write_u16(char* p, u16_t w) {
+    *(unsigned char*)(p + 1) = (w & 0xff);
+    *(unsigned char*)(p + 0) = (w >> 8);
 }
-u16_t read_u16(char *p) {
+u16_t read_u16(char* p) {
     u16_t res;
-    res = *(const unsigned char *)(p + 0);
-    res = *(const unsigned char *)(p + 1) + (res << 8);
+    res = *(const unsigned char*)(p + 0);
+    res = *(const unsigned char*)(p + 1) + (res << 8);
     return res;
 }
 
-void write_u32(char *p, u32_t l) {
-    *(unsigned char *)(p + 3) = (unsigned char)((l >> 0) & 0xff);
-    *(unsigned char *)(p + 2) = (unsigned char)((l >> 8) & 0xff);
-    *(unsigned char *)(p + 1) = (unsigned char)((l >> 16) & 0xff);
-    *(unsigned char *)(p + 0) = (unsigned char)((l >> 24) & 0xff);
+void write_u32(char* p, u32_t l) {
+    *(unsigned char*)(p + 3) = (unsigned char)((l >> 0) & 0xff);
+    *(unsigned char*)(p + 2) = (unsigned char)((l >> 8) & 0xff);
+    *(unsigned char*)(p + 1) = (unsigned char)((l >> 16) & 0xff);
+    *(unsigned char*)(p + 0) = (unsigned char)((l >> 24) & 0xff);
 }
-u32_t read_u32(char *p) {
+u32_t read_u32(char* p) {
     u32_t res;
-    res = *(const unsigned char *)(p + 0);
-    res = *(const unsigned char *)(p + 1) + (res << 8);
-    res = *(const unsigned char *)(p + 2) + (res << 8);
-    res = *(const unsigned char *)(p + 3) + (res << 8);
+    res = *(const unsigned char*)(p + 0);
+    res = *(const unsigned char*)(p + 1) + (res << 8);
+    res = *(const unsigned char*)(p + 2) + (res << 8);
+    res = *(const unsigned char*)(p + 3) + (res << 8);
     return res;
 }
 
-void write_u64(char *s, u64_t a) {
+void write_u64(char* s, u64_t a) {
     assert(0 == 1);
 }
-u64_t read_u64(char *s) {
+u64_t read_u64(char* s) {
     assert(0 == 1);
     return 0;
 }
 
-char *my_ntoa(u32_t ip) {
+char* my_ntoa(u32_t ip) {
     in_addr a;
     a.s_addr = ip;
     return inet_ntoa(a);
@@ -582,7 +583,7 @@ void setnonblocking(int sock) {
 /*
     Generic checksum calculation function
 */
-unsigned short csum(const unsigned short *ptr, int nbytes) {
+unsigned short csum(const unsigned short* ptr, int nbytes) {
     long sum;
     unsigned short oddbyte;
     short answer;
@@ -594,7 +595,7 @@ unsigned short csum(const unsigned short *ptr, int nbytes) {
     }
     if (nbytes == 1) {
         oddbyte = 0;
-        *((u_char *)&oddbyte) = *(u_char *)ptr;
+        *((u_char*)&oddbyte) = *(u_char*)ptr;
         sum += oddbyte;
     }
 
@@ -605,14 +606,14 @@ unsigned short csum(const unsigned short *ptr, int nbytes) {
     return (answer);
 }
 
-unsigned short tcp_csum(const pseudo_header &ph, const unsigned short *ptr, int nbytes) {  // works both for big and little endian
+unsigned short tcp_csum(const pseudo_header& ph, const unsigned short* ptr, int nbytes) {  // works both for big and little endian
 
     long sum;
     unsigned short oddbyte;
     short answer;
 
     sum = 0;
-    unsigned short *tmp = (unsigned short *)&ph;
+    unsigned short* tmp = (unsigned short*)&ph;
     for (int i = 0; i < 6; i++) {
         sum += *tmp++;
     }
@@ -623,7 +624,7 @@ unsigned short tcp_csum(const pseudo_header &ph, const unsigned short *ptr, int 
     }
     if (nbytes == 1) {
         oddbyte = 0;
-        *((u_char *)&oddbyte) = *(u_char *)ptr;
+        *((u_char*)&oddbyte) = *(u_char*)ptr;
         sum += oddbyte;
     }
 
@@ -748,7 +749,7 @@ int round_up_div(int a, int b) {
     return (a + b - 1) / b;
 }
 
-int create_fifo(char *file) {
+int create_fifo(char* file) {
 #if !defined(__MINGW32__)
     if (mkfifo(file, 0666) != 0) {
         if (errno == EEXIST) {
@@ -841,12 +842,12 @@ int new_connected_socket(int &fd,u32_t ip,int port)
         return 0;
 }
 */
-int new_listen_socket2(int &fd, address_t &addr) {
+int new_listen_socket2(int& fd, address_t& addr) {
     fd = socket(addr.get_type(), SOCK_DGRAM, IPPROTO_UDP);
 
     int yes = 1;
 
-    if (::bind(fd, (struct sockaddr *)&addr.inner, addr.get_len()) == -1) {
+    if (::bind(fd, (struct sockaddr*)&addr.inner, addr.get_len()) == -1) {
         mylog(log_fatal, "socket bind error=%s\n", get_sock_error());
         // perror("socket bind error");
         myexit(1);
@@ -858,14 +859,14 @@ int new_listen_socket2(int &fd, address_t &addr) {
 
     return 0;
 }
-int new_connected_socket2(int &fd, address_t &addr, address_t *bind_addr, char *interface_string) {
+int new_connected_socket2(int& fd, address_t& addr, address_t* bind_addr, char* interface_string) {
     fd = socket(addr.get_type(), SOCK_DGRAM, IPPROTO_UDP);
     if (fd < 0) {
         mylog(log_warn, "[%s]create udp_fd error\n", addr.get_str());
         return -1;
     }
 
-    if (bind_addr && ::bind(fd, (struct sockaddr *)&bind_addr->inner, bind_addr->get_len()) == -1) {
+    if (bind_addr && ::bind(fd, (struct sockaddr*)&bind_addr->inner, bind_addr->get_len()) == -1) {
         mylog(log_fatal, "socket bind error=%s\n", get_sock_error());
         // perror("socket bind error");
         myexit(1);
@@ -883,7 +884,7 @@ int new_connected_socket2(int &fd, address_t &addr, address_t *bind_addr, char *
     set_buf_size(fd, socket_buf_size);
 
     mylog(log_debug, "[%s]created new udp_fd %d\n", addr.get_str(), fd);
-    int ret = connect(fd, (struct sockaddr *)&addr.inner, addr.get_len());
+    int ret = connect(fd, (struct sockaddr*)&addr.inner, addr.get_len());
     if (ret != 0) {
         mylog(log_warn, "[%s]fd connect fail\n", addr.get_str());
         sock_close(fd);
@@ -892,10 +893,10 @@ int new_connected_socket2(int &fd, address_t &addr, address_t *bind_addr, char *
     return 0;
 }
 
-u32_t djb2(unsigned char *str, int len) {
+u32_t djb2(unsigned char* str, int len) {
     u32_t hash = 5381;
     int c;
-    for (int i=0; i<len ;i++) {
+    for (int i = 0; i < len; i++) {
         c = *(str++);
         hash = ((hash << 5) + hash) ^ c; /* (hash * 33) ^ c */
     }
@@ -904,10 +905,10 @@ u32_t djb2(unsigned char *str, int len) {
     return hash;
 }
 
-u32_t sdbm(unsigned char *str, int len) {
+u32_t sdbm(unsigned char* str, int len) {
     u32_t hash = 0;
     int c;
-    for (int i=0; i<len ;i++) {
+    for (int i = 0; i < len; i++) {
         c = *(str++);
         hash = c + (hash << 6) + (hash << 16) - hash;
     }
@@ -915,11 +916,10 @@ u32_t sdbm(unsigned char *str, int len) {
     return hash;
 }
 
-
-vector<string> string_to_vec(const char *s, const char *sp) {
+vector<string> string_to_vec(const char* s, const char* sp) {
     vector<string> res;
     string str = s;
-    char *p = strtok((char *)str.c_str(), sp);
+    char* p = strtok((char*)str.c_str(), sp);
     while (p != NULL) {
         res.push_back(p);
         // printf ("%s\n",p);

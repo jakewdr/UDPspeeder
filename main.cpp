@@ -1,15 +1,14 @@
 #include "common.h"
-#include "log.h"
-
-#include "lib/rs.h"
-#include "packet.h"
 #include "connection.h"
-#include "fd_manager.h"
 #include "delay_manager.h"
+#include "fd_manager.h"
 #include "fec_manager.h"
+#include "lib/rs.h"
+#include "log.h"
 #include "misc.h"
+#include "packet.h"
 #include "tunnel.h"
-//#include "tun_dev.h"
+// #include "tun_dev.h"
 #include "git_version.h"
 using namespace std;
 
@@ -78,26 +77,26 @@ static void print_help() {
     // printf("common options,these options must be same on both side\n");
 }
 
-void sigpipe_cb(struct ev_loop *l, ev_signal *w, int revents) {
+void sigpipe_cb(struct ev_loop* l, ev_signal* w, int revents) {
     mylog(log_info, "got sigpipe, ignored");
 }
 
-void sigterm_cb(struct ev_loop *l, ev_signal *w, int revents) {
+void sigterm_cb(struct ev_loop* l, ev_signal* w, int revents) {
     mylog(log_info, "got sigterm, exit");
     myexit(0);
 }
 
-void sigint_cb(struct ev_loop *l, ev_signal *w, int revents) {
+void sigint_cb(struct ev_loop* l, ev_signal* w, int revents) {
     mylog(log_info, "got sigint, exit");
     myexit(0);
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
     working_mode = tunnel_mode;
     init_ws();
     // unit_test();
 
-    struct ev_loop *loop = ev_default_loop(0);
+    struct ev_loop* loop = ev_default_loop(0);
 #if !defined(__MINGW32__)
     ev_signal signal_watcher_sigpipe;
     ev_signal_init(&signal_watcher_sigpipe, sigpipe_cb, SIGPIPE);

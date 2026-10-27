@@ -26,8 +26,8 @@ int output_interval_max = 0 * 1000;
 int fix_latency = 0;
 
 address_t local_addr, remote_addr;
-address_t *out_addr = 0;
-char *out_interface = 0;
+address_t* out_addr = 0;
+char* out_interface = 0;
 // u32_t local_ip_uint32,remote_ip_uint32=0;
 // char local_ip[100], remote_ip[100];
 // int local_port = -1, remote_port = -1;
@@ -56,13 +56,13 @@ int persist_tun = 0;
 
 char rs_par_str[rs_str_len] = "20:10";
 
-int from_normal_to_fec(conn_info_t &conn_info, char *data, int len, int &out_n, char **&out_arr, int *&out_len, my_time_t *&out_delay) {
+int from_normal_to_fec(conn_info_t& conn_info, char* data, int len, int& out_n, char**& out_arr, int*& out_len, my_time_t*& out_delay) {
     static my_time_t out_delay_buf[max_fec_packet_num + 100] = {0};
     // static int out_len_buf[max_fec_packet_num+100]={0};
     // static int counter=0;
     out_delay = out_delay_buf;
     // out_len=out_len_buf;
-    inner_stat_t &inner_stat = conn_info.stat.normal_to_fec;
+    inner_stat_t& inner_stat = conn_info.stat.normal_to_fec;
     if (disable_fec) {
         if (data == 0) {
             out_n = 0;
@@ -75,7 +75,7 @@ int from_normal_to_fec(conn_info_t &conn_info, char *data, int len, int &out_n, 
         inner_stat.output_packet_size += len;
 
         out_n = 1;
-        static char *data_static;
+        static char* data_static;
         data_static = data;
         static int len_static;
         len_static = len;
@@ -152,10 +152,10 @@ int from_normal_to_fec(conn_info_t &conn_info, char *data, int len, int &out_n, 
     // delay_send(1000*1000,dest,data,len);
     return 0;
 }
-int from_fec_to_normal(conn_info_t &conn_info, char *data, int len, int &out_n, char **&out_arr, int *&out_len, my_time_t *&out_delay) {
+int from_fec_to_normal(conn_info_t& conn_info, char* data, int len, int& out_n, char**& out_arr, int*& out_len, my_time_t*& out_delay) {
     static my_time_t out_delay_buf[max_blob_packet_num + 100] = {0};
     out_delay = out_delay_buf;
-    inner_stat_t &inner_stat = conn_info.stat.fec_to_normal;
+    inner_stat_t& inner_stat = conn_info.stat.fec_to_normal;
     if (disable_fec) {
         assert(data != 0);
         inner_stat.input_packet_num++;
@@ -168,7 +168,7 @@ int from_fec_to_normal(conn_info_t &conn_info, char *data, int len, int &out_n, 
             return 0;
         }
         out_n = 1;
-        static char *data_static;
+        static char* data_static;
         data_static = data;
         static int len_static;
         len_static = len;
@@ -207,7 +207,7 @@ int from_fec_to_normal(conn_info_t &conn_info, char *data, int len, int &out_n, 
     return 0;
 }
 
-int delay_send(my_time_t delay, const dest_t &dest, char *data, int len) {
+int delay_send(my_time_t delay, const dest_t& dest, char* data, int len) {
     // int rand=random()%100;
     // mylog(log_info,"rand = %d\n",rand);
 
@@ -227,7 +227,7 @@ int print_parameter() {
     mylog(log_info, "fec_inner_parameter=%s\n", g_fec_par.rs_to_str());
     return 0;
 }
-int handle_command(char *s) {
+int handle_command(char* s) {
     int len = strlen(s);
     while (len >= 1 && s[len - 1] == '\n')
         s[len - 1] = 0;
@@ -300,7 +300,7 @@ int handle_command(char *s) {
     return 0;
 }
 
-static void empty_cb(struct ev_loop *loop, struct ev_timer *watcher, int revents) {
+static void empty_cb(struct ev_loop* loop, struct ev_timer* watcher, int revents) {
 }
 int unit_test() {
     {
@@ -309,7 +309,7 @@ int unit_test() {
             char arry[8];
         } test111;
 
-        assert((void *)&test111.u64 == (void *)&test111.arry[0]);
+        assert((void*)&test111.u64 == (void*)&test111.arry[0]);
         // printf("%llx,%llx\n",&ttt.u64,&ttt.arry[0]);
 
         //		printf("%lld\n",get_fake_random_number_64());
@@ -333,11 +333,11 @@ int unit_test() {
     }
 
     int i, j, k;
-    void *code = fec_new(3, 6);
+    void* code = fec_new(3, 6);
     char arr[6][100] =
         {
             "aaa", "bbb", "ccc", "ddd", "eee", "fff"};
-    char *data[6];
+    char* data[6];
     for (i = 0; i < 6; i++) {
         data[i] = arr[i];
     }
@@ -367,7 +367,7 @@ int unit_test() {
     for (int i = 0; i < 6; i++)
         blob_encode.input(arr2[i], strlen(arr2[i]));
 
-    char **output;
+    char** output;
     int shard_len;
     blob_encode.output(7, output, shard_len);
 
@@ -377,8 +377,8 @@ int unit_test() {
         blob_decode.input(output[i], shard_len);
     }
 
-    char **decode_output;
-    int *len_arr;
+    char** decode_output;
+    int* len_arr;
     int num;
 
     ret = blob_decode.output(num, decode_output, len_arr);
@@ -402,14 +402,14 @@ int unit_test() {
         string b = "22";
         string c = "33333333";
 
-        fec_encode_manager.input((char *)a.c_str(), a.length());
-        fec_encode_manager.input((char *)b.c_str(), b.length());
-        fec_encode_manager.input((char *)c.c_str(), c.length());
+        fec_encode_manager.input((char*)a.c_str(), a.length());
+        fec_encode_manager.input((char*)b.c_str(), b.length());
+        fec_encode_manager.input((char*)c.c_str(), c.length());
         fec_encode_manager.input(0, 0);
 
         int n;
-        char **s_arr;
-        int *len;
+        char** s_arr;
+        int* len;
 
         fec_encode_manager.output(n, s_arr, len);
         printf("<n:%d,len:%d>", n, len[0]);
@@ -420,8 +420,8 @@ int unit_test() {
 
         {
             int n;
-            char **s_arr;
-            int *len_arr;
+            char** s_arr;
+            int* len_arr;
             fec_decode_manager.output(n, s_arr, len_arr);
             printf("<n:%d>", n);
             for (int i = 0; i < n; i++) {
@@ -436,14 +436,14 @@ int unit_test() {
         string b = "bbbbbbbbbbbbb";
         string c = "ccc";
 
-        fec_encode_manager.input((char *)a.c_str(), a.length());
-        fec_encode_manager.input((char *)b.c_str(), b.length());
-        fec_encode_manager.input((char *)c.c_str(), c.length());
+        fec_encode_manager.input((char*)a.c_str(), a.length());
+        fec_encode_manager.input((char*)b.c_str(), b.length());
+        fec_encode_manager.input((char*)c.c_str(), c.length());
         fec_encode_manager.input(0, 0);
 
         int n;
-        char **s_arr;
-        int *len;
+        char** s_arr;
+        int* len;
 
         fec_encode_manager.output(n, s_arr, len);
         printf("<n:%d,len:%d>", n, len[0]);
@@ -455,8 +455,8 @@ int unit_test() {
 
         {
             int n;
-            char **s_arr;
-            int *len_arr;
+            char** s_arr;
+            int* len_arr;
             fec_decode_manager.output(n, s_arr, len_arr);
             printf("<n:%d>", n);
             for (int i = 0; i < n; i++) {
@@ -474,20 +474,20 @@ int unit_test() {
 
         printf("======\n");
         int n;
-        char **s_arr;
-        int *len;
+        char** s_arr;
+        int* len;
         fec_decode_manager.output(n, s_arr, len);
 
         // fec_encode_manager.reset_fec_parameter(3,2,g_fec_mtu,g_fec_queue_len,g_fec_timeout,1);
 
-        fec_parameter_t &fec_par = fec_encode_manager.get_fec_par();
+        fec_parameter_t& fec_par = fec_encode_manager.get_fec_par();
         fec_par.mtu = g_fec_par.mtu;
         fec_par.queue_len = g_fec_par.queue_len;
         fec_par.timeout = g_fec_par.timeout;
         fec_par.mode = 1;
-        fec_par.rs_from_str((char *)"3:2");
+        fec_par.rs_from_str((char*)"3:2");
 
-        fec_encode_manager.input((char *)a.c_str(), a.length());
+        fec_encode_manager.input((char*)a.c_str(), a.length());
         fec_encode_manager.output(n, s_arr, len);
 
         printf("n=<%d>\n", n);
@@ -499,12 +499,12 @@ int unit_test() {
         assert(n == 1);
         printf("%s\n", s_arr[0]);
 
-        fec_encode_manager.input((char *)b.c_str(), b.length());
+        fec_encode_manager.input((char*)b.c_str(), b.length());
         fec_encode_manager.output(n, s_arr, len);
         assert(n == 1);
         // fec_decode_manager.input(s_arr[0],len[0]);
 
-        fec_encode_manager.input((char *)c.c_str(), c.length());
+        fec_encode_manager.input((char*)c.c_str(), c.length());
         fec_encode_manager.output(n, s_arr, len);
 
         assert(n == 3);
@@ -514,8 +514,8 @@ int unit_test() {
 
         {
             int n;
-            char **s_arr;
-            int *len;
+            char** s_arr;
+            int* len;
             fec_decode_manager.output(n, s_arr, len);
             assert(n == 1);
             printf("%s\n", s_arr[0]);
@@ -525,8 +525,8 @@ int unit_test() {
 
         {
             int n;
-            char **s_arr;
-            int *len;
+            char** s_arr;
+            int* len;
             fec_decode_manager.output(n, s_arr, len);
             assert(n == 1);
             printf("n=%d\n", n);
@@ -539,7 +539,7 @@ int unit_test() {
     return 0;
 }
 
-void process_arg(int argc, char *argv[]) {
+void process_arg(int argc, char* argv[]) {
     int is_client = 0, is_server = 0;
     int i, j, k;
     int opt;

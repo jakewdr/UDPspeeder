@@ -1,17 +1,17 @@
 #include "tunnel.h"
 
-void data_from_local_or_fec_timeout(conn_info_t &conn_info, int is_time_out) {
-    fd64_t &remote_fd64 = conn_info.remote_fd64;
-    int &local_listen_fd = conn_info.local_listen_fd;
+void data_from_local_or_fec_timeout(conn_info_t& conn_info, int is_time_out) {
+    fd64_t& remote_fd64 = conn_info.remote_fd64;
+    int& local_listen_fd = conn_info.local_listen_fd;
 
     char data[buf_len];
     int data_len;
     address_t addr;
     u32_t conv;
     int out_n;
-    char **out_arr;
-    int *out_len;
-    my_time_t *out_delay;
+    char** out_arr;
+    int* out_len;
+    my_time_t* out_delay;
     dest_t dest;
     dest.type = type_fd64;
     dest.inner.fd64 = remote_fd64;
@@ -45,7 +45,7 @@ void data_from_local_or_fec_timeout(conn_info_t &conn_info, int is_time_out) {
         address_t::storage_t udp_new_addr_in = {0};
         socklen_t udp_new_addr_len = sizeof(address_t::storage_t);
         if ((data_len = recvfrom(local_listen_fd, data, max_data_len + 1, 0,
-                                 (struct sockaddr *)&udp_new_addr_in, &udp_new_addr_len)) == -1) {
+                                 (struct sockaddr*)&udp_new_addr_in, &udp_new_addr_len)) == -1) {
             mylog(log_debug, "recv_from error,this shouldn't happen,err=%s,but we can try to continue\n", get_sock_error());
             return;
         };
@@ -59,7 +59,7 @@ void data_from_local_or_fec_timeout(conn_info_t &conn_info, int is_time_out) {
             mylog(log_warn, "huge packet,data len=%d (>=%d).strongly suggested to set a smaller mtu at upper level,to get rid of this warn\n ", data_len, mtu_warn);
         }
 
-        addr.from_sockaddr((struct sockaddr *)&udp_new_addr_in, udp_new_addr_len);
+        addr.from_sockaddr((struct sockaddr*)&udp_new_addr_in, udp_new_addr_len);
 
         mylog(log_trace, "Received packet from %s, len: %d\n", addr.get_str(), data_len);
 
@@ -78,7 +78,7 @@ void data_from_local_or_fec_timeout(conn_info_t &conn_info, int is_time_out) {
             mylog(log_trace, "conv=%d\n", conv);
         }
         conn_info.conv_manager.c.update_active_time(conv);
-        char *new_data;
+        char* new_data;
         int new_len;
         put_conv(conv, data, data_len, new_data, new_len);
 
@@ -90,18 +90,18 @@ void data_from_local_or_fec_timeout(conn_info_t &conn_info, int is_time_out) {
         delay_send(out_delay[i], dest, out_arr[i], out_len[i]);
     }
 }
-static void local_listen_cb(struct ev_loop *loop, struct ev_io *watcher, int revents) {
+static void local_listen_cb(struct ev_loop* loop, struct ev_io* watcher, int revents) {
     assert(!(revents & EV_ERROR));
 
-    conn_info_t &conn_info = *((conn_info_t *)watcher->data);
+    conn_info_t& conn_info = *((conn_info_t*)watcher->data);
 
     data_from_local_or_fec_timeout(conn_info, 0);
 }
 
-static void remote_cb(struct ev_loop *loop, struct ev_io *watcher, int revents) {
+static void remote_cb(struct ev_loop* loop, struct ev_io* watcher, int revents) {
     assert(!(revents & EV_ERROR));
 
-    conn_info_t &conn_info = *((conn_info_t *)watcher->data);
+    conn_info_t& conn_info = *((conn_info_t*)watcher->data);
 
     char data[buf_len];
     if (!fd_manager.exist(watcher->u64))  // fd64 has been closed
@@ -109,8 +109,8 @@ static void remote_cb(struct ev_loop *loop, struct ev_io *watcher, int revents) 
         mylog(log_trace, "!fd_manager.exist(events[idx].data.u64)");
         return;
     }
-    fd64_t &remote_fd64 = conn_info.remote_fd64;
-    int &remote_fd = conn_info.remote_fd;
+    fd64_t& remote_fd64 = conn_info.remote_fd64;
+    int& remote_fd = conn_info.remote_fd;
 
     assert(watcher->u64 == remote_fd64);
 
@@ -142,16 +142,16 @@ static void remote_cb(struct ev_loop *loop, struct ev_io *watcher, int revents) 
     }
 
     int out_n;
-    char **out_arr;
-    int *out_len;
-    my_time_t *out_delay;
+    char** out_arr;
+    int* out_len;
+    my_time_t* out_delay;
     from_fec_to_normal(conn_info, data, data_len, out_n, out_arr, out_len, out_delay);
 
     mylog(log_trace, "out_n=%d\n", out_n);
 
     for (int i = 0; i < out_n; i++) {
         u32_t conv;
-        char *new_data;
+        char* new_data;
         int new_len;
         if (get_conv(conv, out_arr[i], out_len[i], new_data, new_len) != 0) {
             mylog(log_debug, "get_conv(conv,out_arr[i],out_len[i],new_data,new_len)!=0");
@@ -174,7 +174,7 @@ static void remote_cb(struct ev_loop *loop, struct ev_io *watcher, int revents) 
     }
 }
 
-static void fifo_cb(struct ev_loop *loop, struct ev_io *watcher, int revents) {
+static void fifo_cb(struct ev_loop* loop, struct ev_io* watcher, int revents) {
     assert(!(revents & EV_ERROR));
     int fifo_fd = watcher->fd;
 
@@ -188,7 +188,7 @@ static void fifo_cb(struct ev_loop *loop, struct ev_io *watcher, int revents) {
     handle_command(buf);
 }
 
-static void delay_manager_cb(struct ev_loop *loop, struct ev_timer *watcher, int revents) {
+static void delay_manager_cb(struct ev_loop* loop, struct ev_timer* watcher, int revents) {
     assert(!(revents & EV_ERROR));
 
     // uint64_t value;
@@ -198,20 +198,20 @@ static void delay_manager_cb(struct ev_loop *loop, struct ev_timer *watcher, int
     // do nothing
 }
 
-static void fec_encode_cb(struct ev_loop *loop, struct ev_timer *watcher, int revents) {
+static void fec_encode_cb(struct ev_loop* loop, struct ev_timer* watcher, int revents) {
     assert(!(revents & EV_ERROR));
 
-    conn_info_t &conn_info = *((conn_info_t *)watcher->data);
+    conn_info_t& conn_info = *((conn_info_t*)watcher->data);
 
     data_from_local_or_fec_timeout(conn_info, 1);
 }
 
-static void conn_timer_cb(struct ev_loop *loop, struct ev_timer *watcher, int revents) {
+static void conn_timer_cb(struct ev_loop* loop, struct ev_timer* watcher, int revents) {
     assert(!(revents & EV_ERROR));
 
     uint64_t value;
 
-    conn_info_t &conn_info = *((conn_info_t *)watcher->data);
+    conn_info_t& conn_info = *((conn_info_t*)watcher->data);
 
     // read(conn_info.timer.get_timer_fd(), &value, 8);
     conn_info.conv_manager.c.clear_inactive();
@@ -221,9 +221,9 @@ static void conn_timer_cb(struct ev_loop *loop, struct ev_timer *watcher, int re
 
     if (debug_force_flush_fec) {
         int out_n;
-        char **out_arr;
-        int *out_len;
-        my_time_t *out_delay;
+        char** out_arr;
+        int* out_len;
+        my_time_t* out_delay;
         dest_t dest;
         dest.type = type_fd64;
         dest.inner.fd64 = conn_info.remote_fd64;
@@ -235,7 +235,7 @@ static void conn_timer_cb(struct ev_loop *loop, struct ev_timer *watcher, int re
     }
 }
 
-static void prepare_cb(struct ev_loop *loop, struct ev_prepare *watcher, int revents) {
+static void prepare_cb(struct ev_loop* loop, struct ev_prepare* watcher, int revents) {
     assert(!(revents & EV_ERROR));
 
     delay_manager.check();
@@ -247,10 +247,10 @@ int tunnel_client_event_loop() {
     int yes = 1;
     // int epoll_fd;
 
-    conn_info_t *conn_info_p = new conn_info_t;
-    conn_info_t &conn_info = *conn_info_p;  // huge size of conn_info,do not allocate on stack
+    conn_info_t* conn_info_p = new conn_info_t;
+    conn_info_t& conn_info = *conn_info_p;  // huge size of conn_info,do not allocate on stack
 
-    int &local_listen_fd = conn_info.local_listen_fd;
+    int& local_listen_fd = conn_info.local_listen_fd;
     new_listen_socket2(local_listen_fd, local_addr);
 
     // epoll_fd = epoll_create1(0);
@@ -263,7 +263,7 @@ int tunnel_client_event_loop() {
     //	myexit(-1);
     // }
 
-    struct ev_loop *loop = ev_default_loop(0);
+    struct ev_loop* loop = ev_default_loop(0);
     assert(loop != NULL);
 
     conn_info.loop = loop;
@@ -281,8 +281,8 @@ int tunnel_client_event_loop() {
     ev_io_init(&local_listen_watcher, local_listen_cb, local_listen_fd, EV_READ);
     ev_io_start(loop, &local_listen_watcher);
 
-    int &remote_fd = conn_info.remote_fd;
-    fd64_t &remote_fd64 = conn_info.remote_fd64;
+    int& remote_fd = conn_info.remote_fd;
+    fd64_t& remote_fd64 = conn_info.remote_fd64;
 
     assert(new_connected_socket2(remote_fd, remote_addr, out_addr, out_interface) == 0);
     remote_fd64 = fd_manager.create(remote_fd);

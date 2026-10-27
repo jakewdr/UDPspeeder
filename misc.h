@@ -10,8 +10,8 @@
 
 #include "common.h"
 #include "connection.h"
-#include "fd_manager.h"
 #include "delay_manager.h"
+#include "fd_manager.h"
 #include "fec_manager.h"
 
 extern char fifo_file[1000];
@@ -38,8 +38,8 @@ extern int fix_latency;
 
 extern address_t local_addr, remote_addr;
 
-extern address_t *out_addr;
-extern char *out_interface;
+extern address_t* out_addr;
+extern char* out_interface;
 
 extern conn_manager_t conn_manager;
 extern delay_manager_t delay_manager;
@@ -58,18 +58,18 @@ extern int mssfix;
 extern int manual_set_tun;
 extern int persist_tun;
 
-int from_normal_to_fec(conn_info_t &conn_info, char *data, int len, int &out_n, char **&out_arr, int *&out_len, my_time_t *&out_delay);
-int from_fec_to_normal(conn_info_t &conn_info, char *data, int len, int &out_n, char **&out_arr, int *&out_len, my_time_t *&out_delay);
+int from_normal_to_fec(conn_info_t& conn_info, char* data, int len, int& out_n, char**& out_arr, int*& out_len, my_time_t*& out_delay);
+int from_fec_to_normal(conn_info_t& conn_info, char* data, int len, int& out_n, char**& out_arr, int*& out_len, my_time_t*& out_delay);
 
-int delay_send(my_time_t delay, const dest_t &dest, char *data, int len);
+int delay_send(my_time_t delay, const dest_t& dest, char* data, int len);
 int print_parameter();
-int handle_command(char *s);
+int handle_command(char* s);
 
 int unit_test();
 
 // void print_help();
 
-void process_arg(int argc, char *argv[]);
+void process_arg(int argc, char* argv[]);
 
 extern char sub_net[100];
 extern u32_t sub_net_uint32;

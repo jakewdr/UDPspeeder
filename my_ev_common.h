@@ -1,10 +1,10 @@
 
 #define EV_STANDALONE 1
 #define EV_COMMON \
-    void *data;   \
+    void* data;   \
     unsigned long long u64;
 #define EV_COMPAT3 0
-//#define EV_VERIFY 2
+// #define EV_VERIFY 2
 
 #if defined(__MINGW32__)
 #define EV_FD_TO_WIN32_HANDLE(fd) (fd)

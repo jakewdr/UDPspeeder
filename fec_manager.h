@@ -9,8 +9,8 @@
 #define FEC_MANAGER_H_
 
 #include "common.h"
-#include "log.h"
 #include "lib/rs.h"
+#include "log.h"
 
 const int max_blob_packet_num = 30000;      // how many packet can be contain in a blob_t ,can be set very large
 const u32_t anti_replay_buff_size = 30000;  // can be set very large
@@ -37,7 +37,7 @@ struct fec_parameter_t {
         unsigned char y;  // fec_redundant_num
     } rs_par[max_fec_packet_num + 10];
 
-    int rs_from_str(char *s)  // todo inefficient
+    int rs_from_str(char* s)  // todo inefficient
     {
         vector<string> str_vec = string_to_vec(s, ",");
         if (str_vec.size() < 1) {
@@ -47,9 +47,9 @@ struct fec_parameter_t {
         vector<rs_parameter_t> par_vec;
         for (int i = 0; i < (int)str_vec.size(); i++) {
             rs_parameter_t tmp_par;
-            string &tmp_str = str_vec[i];
+            string& tmp_str = str_vec[i];
             int x, y;
-            if (sscanf((char *)tmp_str.c_str(), "%d:%d", &x, &y) != 2) {
+            if (sscanf((char*)tmp_str.c_str(), "%d:%d", &x, &y) != 2) {
                 mylog(log_warn, "failed to parse [%s]\n", tmp_str.c_str());
                 return -1;
             }
@@ -135,7 +135,7 @@ struct fec_parameter_t {
         return 0;
     }
 
-    char *rs_to_str()  // todo inefficient
+    char* rs_to_str()  // todo inefficient
     {
         static char res[rs_str_len];
         string tmp_string;
@@ -156,7 +156,7 @@ struct fec_parameter_t {
         return rs_par[rs_cnt - 1];
     }
 
-    int clone(fec_parameter_t &other) {
+    int clone(fec_parameter_t& other) {
         version = other.version;
         mtu = other.mtu;
         queue_len = other.queue_len;
@@ -170,7 +170,7 @@ struct fec_parameter_t {
         return 0;
     }
 
-    int copy_fec(fec_parameter_t &other) {
+    int copy_fec(fec_parameter_t& other) {
         assert(other.rs_cnt >= 1);
         rs_cnt = other.rs_cnt;
         memcpy(rs_par, other.rs_par, sizeof(rs_parameter_t) * rs_cnt);
@@ -239,7 +239,7 @@ struct blob_encode_t {
     int current_len;
     int counter;
 
-    char *output_buf[max_fec_packet_num + 100];
+    char* output_buf[max_fec_packet_num + 100];
 
     blob_encode_t();
 
@@ -249,8 +249,8 @@ struct blob_encode_t {
     int get_shard_len(int n);
     int get_shard_len(int n, int next_packet_len);
 
-    int input(char *s, int len);  // len=use len=0 for second and following packet
-    int output(int n, char **&s_arr, int &len);
+    int input(char* s, int len);  // len=use len=0 for second and following packet
+    int output(int n, char**& s_arr, int& len);
 };
 
 struct blob_decode_t {
@@ -259,13 +259,13 @@ struct blob_decode_t {
     int last_len;
     int counter;
 
-    char *output_buf[max_blob_packet_num + 100];
+    char* output_buf[max_blob_packet_num + 100];
     int output_len[max_blob_packet_num + 100];
 
     blob_decode_t();
     int clear();
-    int input(char *input, int len);
-    int output(int &n, char **&output, int *&len_arr);
+    int input(char* input, int len);
+    int output(int& n, char**& output, int*& len_arr);
 };
 
 class fec_encode_manager_t : not_copy_able_t {
@@ -286,7 +286,7 @@ class fec_encode_manager_t : not_copy_able_t {
     char input_buf[max_fec_packet_num + 5][buf_len];
     int input_len[max_fec_packet_num + 100];
 
-    char *output_buf[max_fec_packet_num + 100];
+    char* output_buf[max_fec_packet_num + 100];
     int output_len[max_fec_packet_num + 100];
 
     int counter;
@@ -296,24 +296,24 @@ class fec_encode_manager_t : not_copy_able_t {
     int ready_for_output;
     u32_t output_n;
 
-    int append(char *s, int len);
+    int append(char* s, int len);
 
     ev_timer timer;
-    struct ev_loop *loop = 0;
-    void (*cb)(struct ev_loop *loop, struct ev_timer *watcher, int revents) = 0;
+    struct ev_loop* loop = 0;
+    void (*cb)(struct ev_loop* loop, struct ev_timer* watcher, int revents) = 0;
 
    public:
     fec_encode_manager_t();
     ~fec_encode_manager_t();
 
-    fec_parameter_t &get_fec_par() {
+    fec_parameter_t& get_fec_par() {
         return fec_par;
     }
-    void set_data(void *data) {
+    void set_data(void* data) {
         timer.data = data;
     }
 
-    void set_loop_and_cb(struct ev_loop *loop, void (*cb)(struct ev_loop *loop, struct ev_timer *watcher, int revents)) {
+    void set_loop_and_cb(struct ev_loop* loop, void (*cb)(struct ev_loop* loop, struct ev_timer* watcher, int revents)) {
         this->loop = loop;
         this->cb = cb;
         ev_init(&timer, cb);
@@ -360,8 +360,8 @@ class fec_encode_manager_t : not_copy_able_t {
     }
     // u64_t get_timer_fd64();
     int reset_fec_parameter(int data_num, int redundant_num, int mtu, int pending_num, int pending_time, int type);
-    int input(char *s, int len /*,int &is_first_packet*/);
-    int output(int &n, char **&s_arr, int *&len);
+    int input(char* s, int len /*,int &is_first_packet*/);
+    int output(int& n, char**& s_arr, int*& len);
 };
 struct fec_data_t {
     int used;
@@ -384,18 +384,18 @@ struct fec_group_t {
 };
 class fec_decode_manager_t : not_copy_able_t {
     anti_replay_t anti_replay;
-    fec_data_t *fec_data = 0;
+    fec_data_t* fec_data = 0;
     unordered_map<u32_t, fec_group_t> mp;
     blob_decode_t blob_decode;
 
     int index;
 
     int output_n;
-    char **output_s_arr;
-    int *output_len_arr;
+    char** output_s_arr;
+    int* output_len_arr;
     int ready_for_output;
 
-    char *output_s_arr_buf[max_fec_packet_num + 100];  // only for type=1,for type=0 the buf inside blot_t is used
+    char* output_s_arr_buf[max_fec_packet_num + 100];  // only for type=1,for type=0 the buf inside blot_t is used
     int output_len_arr_buf[max_fec_packet_num + 100];  // same
 
    public:
@@ -430,8 +430,8 @@ class fec_decode_manager_t : not_copy_able_t {
     }
 
     // int re_init();
-    int input(char *s, int len);
-    int output(int &n, char **&s_arr, int *&len_arr);
+    int input(char* s, int len);
+    int output(int& n, char**& s_arr, int*& len_arr);
 };
 
 #endif /* FEC_MANAGER_H_ */

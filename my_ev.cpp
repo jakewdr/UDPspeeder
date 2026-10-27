@@ -10,7 +10,7 @@
 #pragma GCC diagnostic ignored "-Wall"
 #pragma GCC diagnostic ignored "-W"
 
-#include "my_ev_common.h"
 #include "ev.c"
+#include "my_ev_common.h"
 
 #pragma GCC diagnostic pop

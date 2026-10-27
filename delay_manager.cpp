@@ -5,6 +5,7 @@
  *      Author: root
  */
 #include "delay_manager.h"
+
 #include "log.h"
 #include "packet.h"
 
@@ -37,7 +38,7 @@ int delay_manager_t::get_timer_fd()
 }*/
 
 // int add(my_time_t delay,const dest_t &dest,const char *data,int len);
-int delay_manager_t::add(my_time_t delay, const dest_t &dest, char *data, int len) {
+int delay_manager_t::add(my_time_t delay, const dest_t& dest, char* data, int len) {
     delay_data_t delay_data;
     delay_data.dest = dest;
     // delay_data.data=data;
@@ -59,7 +60,7 @@ int delay_manager_t::add(my_time_t delay, const dest_t &dest, char *data, int le
     }
 
     delay_data_t tmp = delay_data;
-    tmp.data = (char *)malloc(delay_data.len + 100);
+    tmp.data = (char*)malloc(delay_data.len + 100);
     if (!tmp.data) {
         mylog(log_warn, "malloc() returned null in delay_manager_t::add()");
         return -1;
